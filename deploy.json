@@ -1,0 +1,100 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "metadata": {
+      "_generator": {
+        "name": "bicep",
+        "version": "0.18.4.5664",
+        "templateHash": "11843157828774843057"
+      }
+    },
+    "parameters": {
+      "apimName": {
+      "type": "string",
+      "metadata": {
+        "description": "Specifies the name of the APIM."
+      }
+    },
+      "backendList" : {
+      "type": "array",
+      "defaultValue" : [],
+      "metadata": {
+        "description": "List of backend to create in the APIM. Pattern '{backendName: Name of the backend must be unique, url: backend url, weight: value, priority: value}"
+      }
+    },
+      "backendPoolName" : {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the backend pool"
+      }
+    }
+    },
+
+ "resources": [
+
+ {
+      "condition": "[not(empty(parameters('backendList')))]",
+      "copy": {
+        "name": "backendCopy",
+        "count": "[length(parameters('backendList'))]"
+      },
+      "type": "Microsoft.ApiManagement/service/backends",
+      "apiVersion": "2023-09-01-preview",
+      "name": "[concat(parameters('apimName'), '/', parameters('backendList')[copyIndex()].backendName)]",
+      "properties": {
+          "description": "backend description",
+          "url": "[parameters('backendList')[copyIndex()].url]",
+          "protocol": "http",
+          "tls": {
+            "validateCertificateChain": true,
+            "validateCertificateName": true
+          },
+          "circuitBreaker": {
+              "rules": [
+                  {
+                      "name": "openAIBreakerRule",
+                      "failureCondition": {
+                          "count": 3,
+                          "interval": "PT5M",
+                          "statusCodeRanges": [
+                              {
+                                  "min": 429,
+                                  "max": 429
+                              }
+                          ],
+                          "errorReasons": [
+                              "Server errors"
+                          ]
+                      },
+                      "tripDuration": "PT1M"
+                  }
+              ]
+          }
+      }
+    },
+
+    {
+        "type": "Microsoft.ApiManagement/service/backends",
+        "apiVersion": "2023-09-01-preview",
+        "name": "[concat(parameters('apimName'), '/', parameters('backendPoolName'))]",
+        "properties": {
+            "description": "Load balancer for multiple OpenAI endpoints",
+            "type": "Pool",
+            "pool": {
+                "copy": [
+                {
+                    "name": "services",
+                    "count": "[length(parameters('backendList'))]",
+                    "input": {
+                      "id": "[resourceId('Microsoft.ApiManagement/service/backends', parameters('apimName'), parameters('backendList')[copyIndex('services')].backendName)]",
+                      "weight": "[parameters('backendList')[copyIndex('services')].weight]",
+                      "priority": "[parameters('backendList')[copyIndex('services')].priority]"
+                    }
+                }
+                ]                
+            }
+        },
+        "dependsOn": ["backendCopy"]
+    }
+ ]
+}
