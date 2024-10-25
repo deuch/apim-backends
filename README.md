@@ -28,7 +28,7 @@ or without weight and priority (round robin is applied) :
     {"backendName": "backend-2", "url": "https://backend-2.azure.openai.com/openai"}   
 ]</code>
 
-For the JSON stored in the Named Value in APIMn you need to use this format :
+For the JSON stored in the Named Value in APIM you need to use this format (the named value must exist with at least one key:value pair) :
 
 <code>{ "entityKey1": "backendPoolName1", "entityKey2": "backendPoolName2"}
 </code>
