@@ -27,9 +27,20 @@
       "metadata": {
         "description": "Name of the backend pool"
       }
+    },
+    "EntityKey" : {
+      "type": "string",
+      "metadata": {
+        "description": "Key to map entity to backend"
+      }
+    },
+    "APIMBackendNamedValue" : {
+      "type": "string",
+      "metadata": {
+        "description": "Named Value hosting the backend pool list"
+      }
     }
     },
-
  "resources": [
 
  {
@@ -72,7 +83,6 @@
           }
       }
     },
-
     {
         "type": "Microsoft.ApiManagement/service/backends",
         "apiVersion": "2023-09-01-preview",
@@ -87,14 +97,55 @@
                     "count": "[length(parameters('backendList'))]",
                     "input": {
                       "id": "[resourceId('Microsoft.ApiManagement/service/backends', parameters('apimName'), parameters('backendList')[copyIndex('services')].backendName)]",
-                      "weight": "[parameters('backendList')[copyIndex('services')].weight]",
-                      "priority": "[parameters('backendList')[copyIndex('services')].priority]"
+                      "weight": "[if(contains(json(string(parameters('backendList')[copyIndex('services')])), 'weight'),parameters('backendList')[copyIndex('services')].weight , null()) ]",
+                      "priority": "[if(contains(json(string(parameters('backendList')[copyIndex('services')])), 'priority'),parameters('backendList')[copyIndex('services')].priority , null()) ]"
                     }
                 }
                 ]                
             }
         },
         "dependsOn": ["backendCopy"]
+    },
+  {
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2021-04-01",
+    "name": "APIMNamedValue",
+    "properties": {
+      "mode": "Incremental",
+      "parameters": {
+        "apimName": { 
+          "value" : "[parameters('apimName')]"
+        },
+        "APIMBackendNamedValue": {
+          "value":"[parameters('APIMBackendNamedValue')]"
+        }
+      },
+      "template": {
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+          "apimName": { 
+            "type" : "string"
+          },
+          "APIMBackendNamedValue": {
+            "type" : "string"
+          }
+        },
+        "variables": {},
+        "resources": [
+          {
+            "type": "Microsoft.ApiManagement/service/namedValues",
+            "apiVersion": "2023-09-01-preview",
+            "name": "[concat(parameters('apimName'), '/', parameters('APIMBackendNamedValue'))]",
+            "properties": {
+               "value": "[string(union(json(reference(resourceId('Microsoft.ApiManagement/service/namedValues', parameters('apimName'), parameters('APIMBackendNamedValue')), '2023-09-01-preview').value), createObject(parameters('EntityKey'), parameters('backendPoolName')))) ]",
+               "displayName": "[reference(resourceId('Microsoft.ApiManagement/service/namedValues', parameters('apimName'), parameters('APIMBackendNamedValue')), '2023-09-01-preview').displayName]"
+            }
+
+          }       
+          ]
+        }
     }
+  }
  ]
 }
