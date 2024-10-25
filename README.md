@@ -9,7 +9,7 @@ You need to set those parameters :
 | Parameter | Optional | Note |
 | --- | --- | ------------- |
 |APIM Name|No|Specifies the name of the APIM.|
-|backendList|No|Array of backend to create in the APIM. Pattern, an Array [] of multiple {"backendName": "Name of the backend" (must be unique), "url": "backend url", "weight": value (optional), "priority": value (optional)| 
+|backendList|No|Array of backend to create in the APIM. Pattern, an Array [] of multiple {"backendName": "Name of the backend" (must be unique), "url": "backend url", "weight": value (optional), "priority": value (optional)}| 
 |backendPoolName|No|Name of the backend pool|
 |EntityKey|No|Name of Key to retrieve the pool in the JSON List|
 |APIMBackendNamedValue|No|Name of the Named Value of the APIM that host the list of EntityKey:BackendPoolName|
