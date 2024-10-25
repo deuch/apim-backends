@@ -28,8 +28,6 @@ or without weight and priority (round robin is applied) :
     {"backendName": "backend-2", "url": "https://backend-2.azure.openai.com/openai"}   
 ]</code>
 
-You can set weight at 100 and priority at 1 to have a round robin load balancing. Or your can ommit priority and weight.
-
 For the JSON stored in the Named Value in APIMn you need to use this format :
 
 <code>{ "entityKey1": "backendPoolName1", "entityKey2": "backendPoolName2"}
