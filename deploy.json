@@ -19,7 +19,7 @@
       "type": "array",
       "defaultValue" : [],
       "metadata": {
-        "description": "List of backend to create in the APIM. Pattern '{backendName: Name of the backend must be unique, url: backend url, weight: value, priority: value}"
+        "description": "List of backend to create in the APIM. Pattern '{backendName: Name of the backend must be unique, url: backend url, weight: value (optional), priority: value (optional)}"
       }
     },
       "backendPoolName" : {
